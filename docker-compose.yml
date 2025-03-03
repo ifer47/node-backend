@@ -1,0 +1,29 @@
+# services 用于定义应用程序中的各个服务（容器），每个服务对应一个独立的容器实例
+services:
+  # 定义了一个名为 mysql 的服务
+  mysql:
+    # 指定了该服务使用的 Docker 镜像，如果本地没有该镜像，Docker 会自动从 Docker Hub 下载
+    image: mysql:8.3.0
+    # command 用于覆盖容器启动时的默认命令，这里传递了三个 MySQL 启动参数
+    # 设置默认的身份验证插件为 mysql_native_password，这是为了兼容某些旧版客户端或工具（如 PHP 的 MySQL 扩展），因为 MySQL 8 默认使用 caching_sha2_password
+    # 设置服务器的默认字符集为 utf8mb4，支持完整的 Unicode 字符集（包括表情符号）
+    # 设置默认的排序规则为 utf8mb4_general_ci，即不区分大小写的排序规则
+    command: --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_general_ci
+    # environment 用于定义环境变量，这些变量会在容器启动时被注入到容器中
+    environment:
+      # 设置 MySQL 的 root 用户密码为 123456
+      - MYSQL_ROOT_PASSWORD=123456
+      # 设置表名是否区分大小写，0 表示区分大小写（默认行为）
+      - MYSQL_LOWER_CASE_TABLE_NAMES=0
+    # ports 用于映射容器端口到宿主机端口，这里将容器的 3306 端口映射到宿主机的 3307 端口
+    ports:
+      # 如果本地已经有了 3306，左边的可以修改为 3307 等
+      - "3307:3306"
+    # volumes 用于挂载数据卷，实现数据持久化，格式为 "宿主机路径:容器路径"
+    volumes:
+      # 这里的配置将宿主机的 ./data/mysql 目录挂载到容器的 /var/lib/mysql 目录
+      # /var/lib/mysql 是 MySQL 容器中存储数据库文件的默认路径
+      # 挂载后，即使容器被删除，数据仍然保留在宿主机的 ./data/mysql 目录中
+      - ./data/mysql:/var/lib/mysql
