@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { User } = require("../../models");
+const { User, Course } = require("../../models");
 const { Op } = require("sequelize");
 const { NotFoundError, success, failure } = require("../../utils/responses");
 /**
@@ -14,6 +14,13 @@ router.get("/", async function (req, res) {
     const pageSize = Math.abs(Number(query.pageSize)) || 10;
     const offset = (currentPage - 1) * pageSize;
     const condition = {
+      include: [
+        {
+          model: Course,
+          as: "courses",
+          attributes: ["name"],
+        },
+      ],
       where: {},
       order: [["id", "DESC"]],
       limit: pageSize,
@@ -22,17 +29,17 @@ router.get("/", async function (req, res) {
     if (query.email) {
       condition.where.email = query.email;
     }
-    
+
     if (query.username) {
       condition.where.username = query.username;
     }
-    
+
     if (query.nickname) {
       condition.where.nickname = {
         [Op.like]: `%${query.nickname}%`,
       };
     }
-    
+
     if (query.role) {
       condition.where.role = query.role;
     }
@@ -46,7 +53,7 @@ router.get("/", async function (req, res) {
         pageSize,
       },
     });
-  } catch(error) {
+  } catch (error) {
     failure(res, error);
   }
 });

@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { Category } = require("../../models");
+const { Category, Course } = require("../../models");
 const { Op } = require("sequelize");
 const { NotFoundError, success, failure } = require("../../utils/responses");
 /**
@@ -12,6 +12,11 @@ router.get("/", async function (req, res) {
     const query = req.query;
 
     const condition = {
+      include: {
+        model: Course,
+        as: "courses",
+        attributes: ["name"]
+      },
       where: {},
       order: [
         ["rank", "ASC"],
@@ -73,9 +78,13 @@ router.post("/", async function (req, res) {
 router.delete("/:id", async function (req, res) {
   try {
     const category = await getCategory(req);
+    // 查询当前分类下的课程梳理
+    const count = await Course.count({ where: { categoryId: req.params.id } });
+    if (count > 0) {
+      throw new Error("当前分类有课程，无法删除。");
+    }
     // 删除分类
     await category.destroy();
-
     success(res, "删除分类成功。");
   } catch (error) {
     failure(res, error);
