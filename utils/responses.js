@@ -1,13 +1,4 @@
 /**
- * 自定义 404 错误类
- */
-class NotFoundError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = "NotFoundError";
-  }
-}
-/**
  * 请求成功
  */
 function success(res, message, data = {}, code = 200) {
@@ -41,6 +32,24 @@ function failure(res, error) {
     });
   }
 
+  // 便乱填了一个 token 值
+  if (error.name === "JsonWebTokenError") {
+    return res.status(401).json({
+      status: false,
+      message: "认证失败",
+      errors: ["您提交的 token 错误。"],
+    });
+  }
+
+  // token 过期了
+  if (error.name === "TokenExpiredError") {
+    return res.status(401).json({
+      status: false,
+      message: "认证失败",
+      errors: ["您的 token 已过期。"],
+    });
+  }
+
   res.status(500).json({
     status: false,
     message: "服务器错误",
@@ -48,7 +57,6 @@ function failure(res, error) {
   });
 }
 module.exports = {
-  NotFoundError,
   success,
-  failure
+  failure,
 };

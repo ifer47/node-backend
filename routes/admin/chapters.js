@@ -2,7 +2,8 @@ const express = require("express");
 const router = express.Router();
 const { Chapter, Course } = require("../../models");
 const { Op } = require("sequelize");
-const { NotFoundError, success, failure } = require("../../utils/responses");
+const { NotFoundError } = require("../../utils/errors");
+const { success, failure } = require("../../utils/responses");
 /**
  * 获取章节列表
  * GET /admin/chapters

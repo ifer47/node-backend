@@ -2,7 +2,8 @@ const express = require("express");
 const router = express.Router();
 const { Course, Category, User, Chapter } = require("../../models");
 const { Op } = require("sequelize");
-const { NotFoundError, success, failure } = require("../../utils/responses");
+const { NotFoundError } = require("../../utils/errors");
+const { success, failure } = require("../../utils/responses");
 /**
  * 获取课程列表
  * GET /admin/courses
@@ -79,6 +80,8 @@ router.post("/", async function (req, res) {
   try {
     // 白名单过滤
     const body = filterBody(req);
+    // 获取当前登录的用户 ID
+    body.userId = req.user.id;
 
     // 使用 req.body 获取到用户通过 POST 提交的数据，然后创建课程
     const course = await Course.create(body);
@@ -118,6 +121,8 @@ router.put("/:id", async function (req, res) {
     const course = await getCourse(req);
     // 白名单过滤
     const body = filterBody(req);
+    // 获取当前登录的用户 ID
+    body.userId = req.user.id;
     await course.update(body);
 
     success(res, "更新课程成功。", { course });
@@ -134,7 +139,6 @@ router.put("/:id", async function (req, res) {
 function filterBody(req) {
   return {
     categoryId: req.body.categoryId,
-    userId: req.body.userId,
     name: req.body.name,
     image: req.body.image,
     recommended: req.body.recommended,

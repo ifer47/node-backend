@@ -2,7 +2,8 @@ const express = require("express");
 const router = express.Router();
 const { Setting } = require("../../models");
 const { Op } = require("sequelize");
-const { NotFoundError, success, failure } = require("../../utils/responses");
+const { NotFoundError } = require("../../utils/errors");
+const { success, failure } = require("../../utils/responses");
 
 /**
  * 获取单篇系统设置
