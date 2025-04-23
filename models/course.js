@@ -1,5 +1,8 @@
 "use strict";
 const { Model } = require("sequelize");
+const moment = require("moment/moment");
+moment.locale("zh-cn");
+
 module.exports = (sequelize, DataTypes) => {
   class Course extends Model {
     /**
@@ -10,10 +13,20 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       // 课程是属于分类的
-      // 课程也是属于用户的
       models.Course.belongsTo(models.Category, { as: "category" });
+      // 课程也是属于用户的
       models.Course.belongsTo(models.User, { as: "user" });
-      models.Course.hasMany(models.Chapter, { as: 'chapters' });
+      models.Course.hasMany(models.Chapter, { as: "chapters" });
+      // 课程可以被多个用户喜欢
+      // 用 belongsToMany 来实现多对多关联
+      models.Course.belongsToMany(models.User, {
+        // 通过 Likes 中间表来实现关联
+        through: models.Like,
+        // 用来指明中间表里关联用的外键叫什么
+        foreignKey: "courseId",
+        // 用 as 定义了个别名
+        as: "likeUsers",
+      });
     }
   }
   Course.init(
@@ -85,6 +98,18 @@ module.exports = (sequelize, DataTypes) => {
       content: DataTypes.TEXT,
       likesCount: DataTypes.INTEGER,
       chaptersCount: DataTypes.INTEGER,
+      createdAt: {
+        type: DataTypes.DATE,
+        get() {
+          return moment(this.getDataValue("createdAt")).format("YYYY-MM-DD HH:mm:ss");
+        },
+      },
+      updatedAt: {
+        type: DataTypes.DATE,
+        get() {
+          return moment(this.getDataValue("createdAt")).format("YYYY-MM-DD HH:mm:ss");
+        },
+      },
     },
     {
       sequelize,
